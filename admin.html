@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Toko Swalayan</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-store"></i> Toko Swalayan
+            </a>
+            <div class="nav-links" id="nav-actions" style="display: none;">
+                <button id="logout-btn" class="nav-link btn-icon" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Login Form -->
+        <section id="login-section" class="auth-container">
+            <h2>Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary">Masuk</button>
+            </form>
+        </section>
+
+        <!-- Admin Dashboard (Hidden by default) -->
+        <section id="dashboard-section" style="display: none;">
+            <div class="admin-header">
+                <h1>Manajemen Produk</h1>
+                <button id="add-product-btn" class="btn-add">
+                    <i class="fa-solid fa-plus"></i> Tambah Produk
+                </button>
+            </div>
+
+            <div class="admin-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gambar</th>
+                            <th>Nama Produk</th>
+                            <th>Harga</th>
+                            <th>Stok</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body">
+                        <!-- Product rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <h2 id="modal-title">Tambah Produk</h2>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+
+                <div class="form-group">
+                    <label for="product-name">Nama Produk</label>
+                    <input type="text" id="product-name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-price">Harga (Rp)</label>
+                    <input type="number" id="product-price" required min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="product-stock">Stok</label>
+                    <input type="number" id="product-stock" required min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="product-description">Deskripsi</label>
+                    <textarea id="product-description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-image">Gambar Produk</label>
+                    <input type="file" id="product-image" accept="image/*">
+                    <div id="image-preview" style="margin-top: 10px; max-width: 100px;"></div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="save-product-btn">Simpan Produk</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div id="toast-message">Notification message</div>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+
+</html>
