@@ -168,7 +168,7 @@ closeModal.addEventListener('click', () => {
 });
 
 // ImgBB Configuration
-const IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY'; // Ganti dengan API Key Anda dari https://api.imgbb.com/
+const IMGBB_API_KEY = '5e6d78bf99debf25c27ed095b401fbe8'; // Ganti dengan API Key Anda dari https://api.imgbb.com/
 
 // Product Form Submit (Add/Edit)
 productForm.addEventListener('submit', async (e) => {

@@ -13,7 +13,7 @@ Website toko online modern dengan panel admin, menggunakan Firebase untuk databa
 ## 🚀 Panduan Instalasi Lengkap (Langkah demi Langkah)
 
 Ikuti panduan ini dari awal untuk membuat website berjalan 100%.
-
+5555
 ### BAGIAN 1: Setup Google Firebase (Untuk Login & Database)
 
 1.  Buka [console.firebase.google.com](https://console.firebase.google.com/).
