@@ -34,32 +34,32 @@ async function loadProducts() {
             // Default image if none provided
             const imageUrl = product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image';
 
-            productCard.innerHTML = `
-                <img src="${imageUrl}" alt="${product.name}" class="product-image">
+            <img src="${imageUrl}" alt="${product.name}" class="product-image">
                 <div class="product-info">
-                    <div class="product-category">Stok: ${product.stock}</div>
+                    <span class="product-category">Stok: ${product.stock}</span>
                     <h3 class="product-title">${product.name}</h3>
-                    <p class="product-description">${product.description || ''}</p>
-                    <div class="product-price">${formatRupiah(product.price)}</div>
-                    <button class="btn-primary" onclick="addToCart('${productId}')" style="margin-top: 1rem;">
-                        <i class="fa-solid fa-cart-shopping"></i> Beli
-                    </button>
+                    <p class="product-description">${product.description || 'Tidak ada deskripsi.'}</p>
+                    <div class="product-meta">
+                        <div class="product-price">${formatRupiah(product.price)}</div>
+                        <button class="btn-primary" onclick="addToCart('${productId}')">
+                            <i class="fa-solid fa-cart-shopping"></i> Beli
+                        </button>
+                    </div>
                 </div>
-            `;
 
-            productContainer.appendChild(productCard);
+                productContainer.appendChild(productCard);
         });
 
     } catch (error) {
-        console.error("Error loading products: ", error);
-        productContainer.innerHTML = '<p style="text-align:center; color: red;">Gagal memuat produk. Periksa koneksi internet Anda.</p>';
+                    console.error("Error loading products: ", error);
+                productContainer.innerHTML = '<p style="text-align:center; color: red;">Gagal memuat produk. Periksa koneksi internet Anda.</p>';
     }
 }
 
 // Basic Add to Cart (Placeholder)
 window.addToCart = (productId) => {
-    alert(`Produk ${productId} ditambahkan ke keranjang (Fitur ini belum aktif sepenuhnya).`);
+                    alert(`Produk ${productId} ditambahkan ke keranjang (Fitur ini belum aktif sepenuhnya).`);
 }
 
-// Load products on page load
-document.addEventListener('DOMContentLoaded', loadProducts);
+                // Load products on page load
+                document.addEventListener('DOMContentLoaded', loadProducts);
