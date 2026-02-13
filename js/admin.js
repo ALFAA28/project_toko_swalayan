@@ -1,4 +1,4 @@
-import { auth, db, storage } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import {
     signInWithEmailAndPassword,
     signOut,
@@ -14,11 +14,7 @@ import {
     query,
     orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
-    ref,
-    uploadBytes,
-    getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
 
 // DOM Elements
 const loginSection = document.getElementById('login-section');
@@ -144,6 +140,11 @@ window.openEditModal = (id, name, price, stock, description, imageUrl) => {
     document.getElementById('product-stock').value = stock;
     document.getElementById('product-description').value = description || '';
 
+    // Store current URL in a safe place
+    const imageInput = document.getElementById('product-image');
+    imageInput.value = ''; // Reset file input
+    imageInput.setAttribute('data-current-url', imageUrl || '');
+
     if (imageUrl && imageUrl !== 'undefined') {
         imagePreview.innerHTML = `<img src="${imageUrl}" style="max-width: 100px; height: auto;">`;
     } else {
@@ -166,6 +167,9 @@ closeModal.addEventListener('click', () => {
     productModal.classList.remove('active');
 });
 
+// ImgBB Configuration
+const IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY'; // Ganti dengan API Key Anda dari https://api.imgbb.com/
+
 // Product Form Submit (Add/Edit)
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -177,21 +181,27 @@ productForm.addEventListener('submit', async (e) => {
     const stock = Number(document.getElementById('product-stock').value);
     const description = document.getElementById('product-description').value;
     const imageFile = document.getElementById('product-image').files[0];
+    let imageUrl = document.getElementById('product-image').getAttribute('data-current-url');
 
     try {
-        let imageUrl = null;
-
-        // Upload Image if selected
+        // Upload Image to ImgBB if a new file is selected
         if (imageFile) {
-            const storageRef = ref(storage, 'products/' + Date.now() + '_' + imageFile.name);
-            await uploadBytes(storageRef, imageFile);
-            imageUrl = await getDownloadURL(storageRef);
-        } else if (editingProductId) {
-            // Keep existing image if editing and no new image selected
-            // Note: In a real app we'd fetch the old URL, but here we can just update other fields if image is null
-            // Or we could pass the old URL in the openEditModal but for simplicity let's handle updates carefully
-            // Wait, if imageUrl is null on update, we shouldn't overwrite the existing one unless we want to remove it.
-            // Firestore updateDoc only updates specified fields.
+            saveProductBtn.textContent = 'Mengupload Gambar...';
+            const formData = new FormData();
+            formData.append('image', imageFile);
+
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                imageUrl = data.data.url;
+            } else {
+                throw new Error('Gagal upload gambar ke ImgBB: ' + (data.error ? data.error.message : 'Unknown error'));
+            }
         }
 
         const productData = {
@@ -199,12 +209,9 @@ productForm.addEventListener('submit', async (e) => {
             price,
             stock,
             description,
+            imageUrl: imageUrl || 'https://via.placeholder.com/300x200?text=No+Image',
             updatedAt: new Date()
         };
-
-        if (imageUrl) {
-            productData.imageUrl = imageUrl;
-        }
 
         if (editingProductId) {
             // Update
@@ -214,9 +221,6 @@ productForm.addEventListener('submit', async (e) => {
         } else {
             // Create
             productData.createdAt = new Date();
-            // If no image uploaded for new product, use placeholder or null
-            if (!imageUrl) productData.imageUrl = 'https://via.placeholder.com/300x200?text=No+Image';
-
             await addDoc(collection(db, "products"), productData);
             showToast('Produk berhasil ditambahkan.', 'success');
         }
@@ -226,10 +230,22 @@ productForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error("Error saving product: ", error);
-        showToast('Gagal menyimpan produk: ' + error.message, 'error');
+        showToast('Gagal: ' + error.message, 'error');
     } finally {
         saveProductBtn.disabled = false;
         saveProductBtn.textContent = 'Simpan Produk';
+    }
+});
+
+// Preview Image on Selection
+document.getElementById('product-image').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 100px; height: auto;">`;
+        }
+        reader.readAsDataURL(file);
     }
 });
 
