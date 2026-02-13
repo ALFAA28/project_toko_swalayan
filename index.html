@@ -39,6 +39,11 @@
         <section class="section-header">
             <h1 id="page-title">Produk Terbaru</h1>
             <div class="header-line"></div>
+
+            <div class="search-container">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Cari produk impianmu...">
+            </div>
         </section>
 
         <div id="product-container" class="product-grid">
@@ -74,6 +79,27 @@
             &copy; 2026 Toko Swalayan. All rights reserved.
         </div>
     </footer>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content product-modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-body">
+                <div class="modal-image">
+                    <img id="modal-img" src="" alt="">
+                </div>
+                <div class="modal-info">
+                    <span class="modal-tag">STOK TERSEDIA</span>
+                    <h2 id="modal-title">Nama Produk</h2>
+                    <p id="modal-price" class="price">Rp 0</p>
+                    <p id="modal-desc">Deskripsi produk...</p>
+                    <a href="https://wa.me/6281234567890" target="_blank" class="btn-primary btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Beli via WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
