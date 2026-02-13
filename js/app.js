@@ -34,14 +34,29 @@ async function loadProducts() {
             // Default image if none provided
             const imageUrl = product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image';
 
+            // Discount Logic
+            const discount = product.discount || 0;
+            const finalPrice = product.price - (product.price * discount / 100);
+
+            let priceDisplay = `<div class="price">${formatRupiah(product.price)}</div>`;
+            if (discount > 0) {
+                priceDisplay = `
+                    <div class="price-container">
+                        <span class="original-price">${formatRupiah(product.price)}</span>
+                        <span class="final-price">${formatRupiah(finalPrice)}</span>
+                    </div>
+                `;
+            }
+
             productCard.innerHTML = `
+                ${discount > 0 ? `<div class="discount-badge">Hemat ${discount}%</div>` : ''}
                 <img src="${imageUrl}" alt="${product.name}">
                 <div class="card-content">
                     <div class="product-category">Groceries</div>
                     <div class="product-title">${product.name}</div>
                     <div class="product-desc">${product.description || 'Deskripsi produk tidak tersedia.'}</div>
                     <div class="card-footer">
-                        <div class="price">${formatRupiah(product.price)}</div>
+                        ${priceDisplay}
                         <span class="stock-tag">Stok: ${product.stock}</span>
                     </div>
                 </div>

@@ -93,15 +93,20 @@ async function loadProducts() {
         querySnapshot.forEach((docSnap) => {
             const product = docSnap.data();
             const id = docSnap.id;
+            // Handle potentially undefined discount
+            const discount = product.discount || 0;
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><img src="${product.imageUrl || 'https://via.placeholder.com/50'}" alt="Product"></td>
-                <td>${product.name}</td>
+                <td>
+                    ${product.name}
+                    ${discount > 0 ? `<br><small style="color:red; font-weight:bold;">Diskon ${discount}%</small>` : ''}
+                </td>
                 <td>Rp ${product.price}</td>
                 <td>${product.stock}</td>
                 <td class="actions">
-                    <button class="btn-icon btn-edit" onclick="openEditModal('${id}', '${product.name}', ${product.price}, ${product.stock}, '${product.description}', '${product.imageUrl}')">
+                    <button class="btn-icon btn-edit" onclick="openEditModal('${id}', '${product.name}', ${product.price}, ${product.stock}, '${product.description}', '${product.imageUrl}', ${discount})">
                         <i class="fa-solid fa-pen"></i>
                     </button>
                     <button class="btn-icon btn-delete" onclick="deleteProduct('${id}')">
@@ -178,6 +183,7 @@ productForm.addEventListener('submit', async (e) => {
 
     const name = document.getElementById('product-name').value;
     const price = Number(document.getElementById('product-price').value);
+    const discount = Number(document.getElementById('product-discount').value) || 0;
     const stock = Number(document.getElementById('product-stock').value);
     const description = document.getElementById('product-description').value;
     const imageFile = document.getElementById('product-image').files[0];
@@ -207,6 +213,7 @@ productForm.addEventListener('submit', async (e) => {
         const productData = {
             name,
             price,
+            discount, // Save discount
             stock,
             description,
             imageUrl: imageUrl || 'https://via.placeholder.com/300x200?text=No+Image',
@@ -302,17 +309,30 @@ async function loadCashierProducts() {
         snapshot.forEach(doc => {
             const p = doc.data();
             p.id = doc.id;
+            p.discount = p.discount || 0;
+            // Calculate Final Price
+            p.finalPrice = p.price - (p.price * p.discount / 100);
+
             allProductsCache.push(p);
 
             const div = document.createElement('div');
             div.className = 'product-card-small';
             div.onclick = () => addToCart(p);
+
+            let priceDisplay = `Rp ${p.finalPrice}`;
+            if (p.discount > 0) {
+                priceDisplay = `<span style="text-decoration: line-through; font-size: 0.8em; color: gray;">Rp ${p.price}</span> <br> <b>Rp ${p.finalPrice}</b>`;
+            }
+
             div.innerHTML = `
+                ${p.discount > 0 ? `<div style="position:absolute; top:5px; right:5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:3px;">-${p.discount}%</div>` : ''}
                 <img src="${p.imageUrl || 'https://via.placeholder.com/100'}" alt="${p.name}">
                 <h4>${p.name}</h4>
-                <p>Rp ${p.price}</p>
+                <p>${priceDisplay}</p>
                 <small>Stok: ${p.stock}</small>
             `;
+            // Add relative positioning for badge
+            div.style.position = 'relative';
             container.appendChild(div);
         });
     } catch (e) {
@@ -357,7 +377,12 @@ function addToCart(product) {
             showToast('Mencapai batas stok.', 'error');
         }
     } else {
-        cart.push({ ...product, qty: 1 });
+        cart.push({
+            ...product,
+            qty: 1,
+            price: product.price, // Keep original for reference
+            finalPrice: product.finalPrice
+        });
     }
     updateCartUI();
 }
@@ -368,15 +393,15 @@ function updateCartUI() {
     let total = 0;
 
     cart.forEach(item => {
-        const subtotal = item.price * item.qty;
+        const subtotal = item.finalPrice * item.qty;
         total += subtotal;
 
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
             <div class="cart-item-info">
-                <h4>${item.name}</h4>
-                <small>@ ${item.price} x ${item.qty} = ${subtotal}</small>
+                <h4>${item.name} ${item.discount > 0 ? `<small style="color:red">(-${item.discount}%)</small>` : ''}</h4>
+                <small>@ ${item.finalPrice} x ${item.qty} = ${subtotal}</small>
             </div>
             <div class="cart-controls">
                 <button class="btn-qty" onclick="changeQty('${item.id}', -1)">-</button>
@@ -427,7 +452,7 @@ window.changeQty = (id, delta) => {
 document.getElementById('pay-amount').addEventListener('input', calculateChange);
 
 function calculateChange() {
-    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.qty), 0);
     const pay = Number(document.getElementById('pay-amount').value);
     const change = pay - total;
 
@@ -446,7 +471,7 @@ function calculateChange() {
 }
 
 document.getElementById('checkout-btn').addEventListener('click', async () => {
-    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.qty), 0);
     const pay = Number(document.getElementById('pay-amount').value);
 
     if (pay < total) {
@@ -470,9 +495,11 @@ document.getElementById('checkout-btn').addEventListener('click', async () => {
             items: cart.map(i => ({
                 id: i.id,
                 name: i.name,
-                price: i.price,
+                price: i.finalPrice, // Use discounted price
+                originalPrice: i.price,
+                discount: i.discount || 0,
                 qty: i.qty,
-                subtotal: i.price * i.qty
+                subtotal: i.finalPrice * i.qty
             })),
             cashierEmail: auth.currentUser?.email || 'admin'
         };
@@ -500,6 +527,7 @@ document.getElementById('checkout-btn').addEventListener('click', async () => {
         showToast('Gagal memproses transaksi.', 'error');
     } finally {
         document.getElementById('checkout-btn').textContent = 'Bayar & Cetak';
+        document.getElementById('checkout-btn').disabled = false;
     }
 });
 
