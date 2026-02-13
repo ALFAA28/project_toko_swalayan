@@ -45,28 +45,114 @@
 
         <!-- Admin Dashboard (Hidden by default) -->
         <section id="dashboard-section" style="display: none;">
-            <div class="admin-header">
-                <h1>Manajemen Produk</h1>
-                <button id="add-product-btn" class="btn-add">
-                    <i class="fa-solid fa-plus"></i> Tambah Produk
-                </button>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('products')"><i class="fa-solid fa-box"></i>
+                    Produk</button>
+                <button class="tab-btn" onclick="switchTab('cashier')"><i class="fa-solid fa-cash-register"></i>
+                    Kasir</button>
+                <button class="tab-btn" onclick="switchTab('reports')"><i class="fa-solid fa-chart-line"></i>
+                    Laporan</button>
             </div>
 
-            <div class="admin-table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Gambar</th>
-                            <th>Nama Produk</th>
-                            <th>Harga</th>
-                            <th>Stok</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-table-body">
-                        <!-- Product rows will be populated here -->
-                    </tbody>
-                </table>
+            <!-- PRODUCT TAB -->
+            <div id="tab-products" class="tab-content active">
+                <div class="admin-header">
+                    <h1>Manajemen Produk</h1>
+                    <button id="add-product-btn" class="btn-add">
+                        <i class="fa-solid fa-plus"></i> Tambah Produk
+                    </button>
+                </div>
+
+                <div class="admin-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Gambar</th>
+                                <th>Nama Produk</th>
+                                <th>Harga</th>
+                                <th>Stok</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body">
+                            <!-- Product rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CASHIER TAB -->
+            <div id="tab-cashier" class="tab-content" style="display: none;">
+                <div class="admin-header">
+                    <h1>Kasir / Point of Sale</h1>
+                </div>
+                <div class="cashier-layout">
+                    <!-- Product Selection -->
+                    <div class="cashier-products">
+                        <input type="text" id="cashier-search" placeholder="Cari nama produk..." class="search-box">
+                        <div id="cashier-product-list" class="product-grid-small">
+                            <!-- Products to select -->
+                        </div>
+                    </div>
+                    <!-- Cart -->
+                    <div class="cashier-cart">
+                        <h3>Keranjang Belanja</h3>
+                        <div id="cart-items" class="cart-items-container">
+                            <!-- Cart Items -->
+                            <p style="text-align: center; color: gray;">Keranjang masih kosong</p>
+                        </div>
+                        <div class="cart-summary">
+                            <div class="summary-row">
+                                <span>Total:</span>
+                                <span id="cart-total" class="total-price">Rp 0</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Bayar (Rp)</label>
+                                <input type="number" id="pay-amount" placeholder="0">
+                            </div>
+                            <div class="summary-row">
+                                <span>Kembalian:</span>
+                                <span id="change-amount">Rp 0</span>
+                            </div>
+                            <button id="checkout-btn" class="btn-primary" disabled>Bayar & Cetak</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORT TAB -->
+            <div id="tab-reports" class="tab-content" style="display: none;">
+                <div class="admin-header">
+                    <h1>Laporan Penjualan</h1>
+                    <button class="btn-primary" onclick="loadReports()"><i class="fa-solid fa-rotate"></i>
+                        Refresh</button>
+                </div>
+                <div class="stats-cards">
+                    <div class="card">
+                        <h3>Pendapatan Hari Ini</h3>
+                        <p id="today-income" class="stat-number">Rp 0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total Transaksi</h3>
+                        <p id="total-transactions" class="stat-number">0</p>
+                    </div>
+                </div>
+                <div class="admin-table-container" style="margin-top: 2rem;">
+                    <h3>Riwayat Transaksi Terakhir</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Total Belanja</th>
+                                <th>Detail Barang</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body">
+                            <!-- Report rows -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </main>
