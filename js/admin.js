@@ -8,6 +8,8 @@ import {
     collection,
     addDoc,
     getDocs,
+    getDoc,
+    setDoc,
     doc,
     updateDoc,
     deleteDoc,
@@ -93,20 +95,15 @@ async function loadProducts() {
         querySnapshot.forEach((docSnap) => {
             const product = docSnap.data();
             const id = docSnap.id;
-            // Handle potentially undefined discount
-            const discount = product.discount || 0;
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><img src="${product.imageUrl || 'https://via.placeholder.com/50'}" alt="Product"></td>
-                <td>
-                    ${product.name}
-                    ${discount > 0 ? `<br><small style="color:red; font-weight:bold;">Diskon ${discount}%</small>` : ''}
-                </td>
+                <td>${product.name}</td>
                 <td>Rp ${product.price}</td>
                 <td>${product.stock}</td>
                 <td class="actions">
-                    <button class="btn-icon btn-edit" onclick="openEditModal('${id}', '${product.name}', ${product.price}, ${product.stock}, '${product.description}', '${product.imageUrl}', ${discount})">
+                    <button class="btn-icon btn-edit" onclick="openEditModal('${id}', '${product.name}', ${product.price}, ${product.stock}, '${product.description}', '${product.imageUrl}')">
                         <i class="fa-solid fa-pen"></i>
                     </button>
                     <button class="btn-icon btn-delete" onclick="deleteProduct('${id}')">
@@ -183,7 +180,6 @@ productForm.addEventListener('submit', async (e) => {
 
     const name = document.getElementById('product-name').value;
     const price = Number(document.getElementById('product-price').value);
-    const discount = Number(document.getElementById('product-discount').value) || 0;
     const stock = Number(document.getElementById('product-stock').value);
     const description = document.getElementById('product-description').value;
     const imageFile = document.getElementById('product-image').files[0];
@@ -213,7 +209,6 @@ productForm.addEventListener('submit', async (e) => {
         const productData = {
             name,
             price,
-            discount, // Save discount
             stock,
             description,
             imageUrl: imageUrl || 'https://via.placeholder.com/300x200?text=No+Image',
@@ -270,6 +265,77 @@ function showToast(message, type = 'success') {
 }
 
 // --- TAB NAVIGATION ---
+// --- SETTINGS LOGIC ---
+const discountActiveCheckbox = document.getElementById('discount-active');
+const discountNameInput = document.getElementById('discount-name');
+const discountPercentInput = document.getElementById('discount-percent');
+let currentSettings = { discountActive: false, discountName: '', discountPercent: 0 };
+
+async function loadSettings() {
+    try {
+        const docRef = doc(db, "settings", "store_config");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            currentSettings = docSnap.data();
+            discountActiveCheckbox.checked = currentSettings.discountActive;
+            discountNameInput.value = currentSettings.discountName || '';
+            discountPercentInput.value = currentSettings.discountPercent || '';
+
+            // Toggle inputs visibility based on checkbox
+            toggleDiscountInputs();
+        }
+    } catch (e) {
+        console.error("Error loading settings:", e);
+    }
+}
+
+discountActiveCheckbox.addEventListener('change', toggleDiscountInputs);
+
+function toggleDiscountInputs() {
+    const details = document.getElementById('discount-details');
+    if (discountActiveCheckbox.checked) {
+        details.style.display = 'block';
+    } else {
+        details.style.display = 'none';
+    }
+}
+
+document.getElementById('settings-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Menyimpan...';
+
+    const newSettings = {
+        discountActive: discountActiveCheckbox.checked,
+        discountName: discountNameInput.value,
+        discountPercent: Number(discountPercentInput.value)
+    };
+
+    try {
+        await setDoc(doc(db, "settings", "store_config"), newSettings);
+        currentSettings = newSettings;
+        showToast('Pengaturan berhasil disimpan!', 'success');
+
+        // Refresh cashier if tab is open to apply new discount
+        if (document.getElementById('tab-cashier').style.display !== 'none') {
+            updateCartUI();
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Gagal menyimpan pengaturan.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Pengaturan';
+    }
+});
+
+// Update loadReports to actually trigger
+window.loadReports = loadReports;
+
+// Update switchTab to load settings
+const originalSwitchTab = window.switchTab;
 window.switchTab = (tabName) => {
     // Hide all contents
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
@@ -278,16 +344,17 @@ window.switchTab = (tabName) => {
 
     // Show selected
     document.getElementById(`tab-${tabName}`).style.display = 'block';
-    // Activate button (need to find which one clicked, but simpler to loop logic or use e.target)
-    // For simplicity, we assume buttons are in order or finding by text/index.
-    // Let's just re-query based on logic in HTML calls
+
     const b = Array.from(document.querySelectorAll('.tab-btn')).find(el => el.getAttribute('onclick').includes(tabName));
     if (b) b.classList.add('active');
 
     if (tabName === 'cashier') {
         loadCashierProducts();
+        loadSettings(); // Ensure we have latest discount info for cashier
     } else if (tabName === 'reports') {
         loadReports();
+    } else if (tabName === 'settings') {
+        loadSettings();
     }
 };
 
@@ -309,30 +376,17 @@ async function loadCashierProducts() {
         snapshot.forEach(doc => {
             const p = doc.data();
             p.id = doc.id;
-            p.discount = p.discount || 0;
-            // Calculate Final Price
-            p.finalPrice = p.price - (p.price * p.discount / 100);
-
             allProductsCache.push(p);
 
             const div = document.createElement('div');
             div.className = 'product-card-small';
             div.onclick = () => addToCart(p);
-
-            let priceDisplay = `Rp ${p.finalPrice}`;
-            if (p.discount > 0) {
-                priceDisplay = `<span style="text-decoration: line-through; font-size: 0.8em; color: gray;">Rp ${p.price}</span> <br> <b>Rp ${p.finalPrice}</b>`;
-            }
-
             div.innerHTML = `
-                ${p.discount > 0 ? `<div style="position:absolute; top:5px; right:5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:3px;">-${p.discount}%</div>` : ''}
                 <img src="${p.imageUrl || 'https://via.placeholder.com/100'}" alt="${p.name}">
                 <h4>${p.name}</h4>
-                <p>${priceDisplay}</p>
+                <p>Rp ${p.price}</p>
                 <small>Stok: ${p.stock}</small>
             `;
-            // Add relative positioning for badge
-            div.style.position = 'relative';
             container.appendChild(div);
         });
     } catch (e) {
@@ -377,31 +431,27 @@ function addToCart(product) {
             showToast('Mencapai batas stok.', 'error');
         }
     } else {
-        cart.push({
-            ...product,
-            qty: 1,
-            price: product.price, // Keep original for reference
-            finalPrice: product.finalPrice
-        });
+        cart.push({ ...product, qty: 1 });
     }
     updateCartUI();
 }
 
+// --- CASHIER CALCULATION UPDATE ---
 function updateCartUI() {
     const container = document.getElementById('cart-items');
     container.innerHTML = '';
-    let total = 0;
+    let subtotal = 0;
 
     cart.forEach(item => {
-        const subtotal = item.finalPrice * item.qty;
-        total += subtotal;
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
 
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
             <div class="cart-item-info">
-                <h4>${item.name} ${item.discount > 0 ? `<small style="color:red">(-${item.discount}%)</small>` : ''}</h4>
-                <small>@ ${item.finalPrice} x ${item.qty} = ${subtotal}</small>
+                <h4>${item.name}</h4>
+                <small>@ ${item.price} x ${item.qty} = ${itemTotal}</small>
             </div>
             <div class="cart-controls">
                 <button class="btn-qty" onclick="changeQty('${item.id}', -1)">-</button>
@@ -414,14 +464,32 @@ function updateCartUI() {
 
     if (cart.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: gray;">Keranjang masih kosong</p>';
+        document.getElementById('cart-subtotal').textContent = `Rp 0`;
+        document.getElementById('discount-row').style.display = 'none';
+        document.getElementById('cart-total').textContent = `Rp 0`;
+        document.getElementById('checkout-btn').disabled = true;
+        return;
+    }
+
+    document.getElementById('cart-subtotal').textContent = `Rp ${subtotal}`;
+
+    // Apply Discount
+    let total = subtotal;
+    if (currentSettings.discountActive && currentSettings.discountPercent > 0) {
+        const discountAmount = Math.floor(subtotal * (currentSettings.discountPercent / 100));
+        total = subtotal - discountAmount;
+
+        document.getElementById('discount-row').style.display = 'flex';
+        document.getElementById('discount-label').textContent = `${currentSettings.discountName} ${currentSettings.discountPercent}%`;
+        document.getElementById('cart-discount').textContent = `-Rp ${discountAmount}`;
+    } else {
+        document.getElementById('discount-row').style.display = 'none';
     }
 
     document.getElementById('cart-total').textContent = `Rp ${total}`;
 
-    // Enable checkout if cart not empty
-    const payBtn = document.getElementById('checkout-btn');
-    payBtn.disabled = cart.length === 0;
-
+    // Enable checkout
+    document.getElementById('checkout-btn').disabled = false;
     calculateChange();
 }
 
@@ -452,7 +520,14 @@ window.changeQty = (id, delta) => {
 document.getElementById('pay-amount').addEventListener('input', calculateChange);
 
 function calculateChange() {
-    const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.qty), 0);
+    // Re-calculate total logic to get the number
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let total = subtotal;
+    if (currentSettings.discountActive && currentSettings.discountPercent > 0) {
+        const discountAmount = Math.floor(subtotal * (currentSettings.discountPercent / 100));
+        total = subtotal - discountAmount;
+    }
+
     const pay = Number(document.getElementById('pay-amount').value);
     const change = pay - total;
 
@@ -470,8 +545,25 @@ function calculateChange() {
     }
 }
 
-document.getElementById('checkout-btn').addEventListener('click', async () => {
-    const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.qty), 0);
+// Re-attach checkout listener (simplest way is to clone node to remove old listeners, or just use a flag. 
+// Since I am acting as the developer editing code, I can just replace the old checkout logic).
+// I will assume the old listener is gone or I can replace the element.
+// Let's replace the element to clear listeners.
+const oldBtn = document.getElementById('checkout-btn');
+const newBtn = oldBtn.cloneNode(true);
+oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+newBtn.addEventListener('click', async () => {
+    // Re-calculate total
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let total = subtotal;
+    let discountAmount = 0;
+
+    if (currentSettings.discountActive && currentSettings.discountPercent > 0) {
+        discountAmount = Math.floor(subtotal * (currentSettings.discountPercent / 100));
+        total = subtotal - discountAmount;
+    }
+
     const pay = Number(document.getElementById('pay-amount').value);
 
     if (pay < total) {
@@ -482,52 +574,46 @@ document.getElementById('checkout-btn').addEventListener('click', async () => {
     if (!confirm('Proses transaksi?')) return;
 
     try {
-        const checkoutBtn = document.getElementById('checkout-btn');
-        checkoutBtn.textContent = 'Memproses...';
-        checkoutBtn.disabled = true;
+        newBtn.textContent = 'Memproses...';
+        newBtn.disabled = true;
 
-        // 1. Transaction Data
         const transaction = {
             date: new Date(),
+            subtotal: subtotal,
+            discount: discountAmount,
+            discountName: currentSettings.discountActive ? currentSettings.discountName : null,
             total: total,
             pay: pay,
             change: pay - total,
             items: cart.map(i => ({
                 id: i.id,
                 name: i.name,
-                price: i.finalPrice, // Use discounted price
-                originalPrice: i.price,
-                discount: i.discount || 0,
+                price: i.price,
                 qty: i.qty,
-                subtotal: i.finalPrice * i.qty
+                subtotal: i.price * i.qty
             })),
             cashierEmail: auth.currentUser?.email || 'admin'
         };
 
-        // 2. Reduce Stock in Database
         for (const item of cart) {
             const productRef = doc(db, "products", item.id);
             const newStock = item.stock - item.qty;
             await updateDoc(productRef, { stock: newStock });
         }
 
-        // 3. Save Transaction
         await addDoc(collection(db, "transactions"), transaction);
 
         showToast('Transaksi Berhasil!', 'success');
-
-        // Reset
         cart = [];
         document.getElementById('pay-amount').value = '';
         updateCartUI();
-        loadCashierProducts(); // Refresh stock display
+        loadCashierProducts();
 
     } catch (error) {
         console.error(error);
         showToast('Gagal memproses transaksi.', 'error');
     } finally {
-        document.getElementById('checkout-btn').textContent = 'Bayar & Cetak';
-        document.getElementById('checkout-btn').disabled = false;
+        newBtn.textContent = 'Bayar & Cetak';
     }
 });
 
