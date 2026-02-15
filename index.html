@@ -20,18 +20,24 @@
             <div class="logo">
                 <i class="fa-solid fa-store"></i> Toko Swalayan
             </div>
-            <div class="hamburger">
-                <i class="fa-solid fa-bars"></i>
-            </div>
-            <div class="nav-links" id="nav-links">
-                <a href="#" class="active"><i class="fa-solid fa-house"></i> Home</a>
+            <div class="nav-links">
+                <div class="dropdown">
+                    <a href="#" class="active dropbtn"><i class="fa-solid fa-house"></i> Home <i
+                            class="fa-solid fa-caret-down" style="font-size: 0.8em; margin-left: 5px;"></i></a>
+                    <div class="dropdown-content">
+                        <a href="#hero">Beranda</a>
+                        <a href="#product-container">Produk</a>
+                        <a href="#how-to-buy">Cara Belanja</a>
+                        <a href="#contact">Kontak</a>
+                    </div>
+                </div>
                 <a href="admin.html"><i class="fa-solid fa-user-shield"></i> Admin</a>
             </div>
         </nav>
     </header>
 
     <!-- NEW HERO BANNER -->
-    <div class="hero-section">
+    <div id="hero" class="hero-section">
         <div class="hero-content">
             <h1>Selamat Datang di Toko Kami! 🛒</h1>
             <p>Temukan produk terbaik dengan harga termurah dan kualitas terjamin.</p>
@@ -58,7 +64,7 @@
     </main>
 
     <!-- How to Buy Section -->
-    <section class="how-to-buy">
+    <section id="how-to-buy" class="how-to-buy">
         <div class="container" style="max-width: 1200px; margin: 4rem auto; text-align: center; padding: 0 2rem;">
             <h2>Cara Belanja</h2>
             <div class="steps-grid"
@@ -86,7 +92,7 @@
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer id="contact">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Toko Swalayan</h3>
