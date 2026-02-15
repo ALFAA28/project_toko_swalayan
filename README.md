@@ -10,6 +10,28 @@ Website toko online modern dengan panel admin, menggunakan Firebase untuk databa
 
 ---
 
+## 📖 Panduan Transaksi
+
+### 1. Pelanggan (Online)
+Sistem menggunakan metode **Direct-to-WhatsApp**:
+1. Pelanggan membuka website.
+2. Memilih produk dan melihat detail.
+3. Menekan tombol **"Beli via WhatsApp"**.
+4. Sistem otomatis membuat template pesan berisi Nama Barang & Harga.
+5. Pelanggan mengirim pesan WA ke Admin.
+
+### 2. Admin (Proses Order Online & Offline)
+**PENTING: Semua transaksi (dari WA atau Langsung) harus diinput ke Kasir agar Stok Berkurang.**
+
+1. Login ke halaman Admin.
+2. Buka tab **"Kasir"**.
+3. Pilih produk yang dipesan pelanggan.
+4. Masukkan jumlah uang pembayaran.
+5. Klik **"Bayar & Cetak"**.
+6. **Otomatis**: Stok di database berkurang & Transaksi tercatat di Laporan.
+
+---
+
 ## 🚀 Panduan Instalasi Lengkap (Langkah demi Langkah)
 
 Ikuti panduan ini dari awal untuk membuat website berjalan 100%.
