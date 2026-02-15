@@ -934,8 +934,9 @@ input:checked+.slider:before {
 @media (max-width: 768px) {
 
     /* Responsive Header */
+    /* Responsive Header */
     .hamburger {
-        display: block;
+        display: block !important;
     }
 
     .nav-links {
@@ -950,10 +951,11 @@ input:checked+.slider:before {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         border-top: 1px solid #e2e8f0;
         animation: slideDown 0.3s ease;
+        z-index: 1000;
     }
 
     .nav-links.active {
-        display: flex;
+        display: flex !important;
     }
 
     .nav-links a {
@@ -962,6 +964,12 @@ input:checked+.slider:before {
         width: 100%;
         border-bottom: 1px solid #f1f5f9;
         display: block;
+        color: var(--text-primary);
+    }
+
+    .nav-links a:hover {
+        background-color: #f1f5f9;
+        color: var(--accent-color);
     }
 
     .nav-links a:last-child {

@@ -192,31 +192,41 @@ window.addToCart = (productId) => {
 }
 
 // Load products on page load
-// --- MOBILE MENU TOGGLE ---
-const hamburger = document.querySelector('.hamburger');
-const navLinks = document.getElementById('nav-links');
+document.addEventListener('DOMContentLoaded', () => {
+    loadProducts();
 
-if (hamburger && navLinks) {
-    hamburger.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
+    // --- MOBILE MENU TOGGLE ---
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.getElementById('nav-links');
 
-        // Toggle icon
-        const icon = hamburger.querySelector('i');
-        if (navLinks.classList.contains('active')) {
-            icon.classList.replace('fa-bars', 'fa-times');
-        } else {
-            icon.classList.replace('fa-times', 'fa-bars');
-        }
-    });
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent closing immediately
+            navLinks.classList.toggle('active');
 
-    // Close menu when clicking a link
-    navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            hamburger.querySelector('i').classList.replace('fa-times', 'fa-bars');
+            // Toggle icon
+            const icon = hamburger.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.replace('fa-bars', 'fa-times');
+            } else {
+                icon.classList.replace('fa-times', 'fa-bars');
+            }
         });
-    });
-}
 
-// Load products on page load
-document.addEventListener('DOMContentLoaded', loadProducts);
+        // Close menu when clicking a link
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.querySelector('i').classList.replace('fa-times', 'fa-bars');
+            });
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+                navLinks.classList.remove('active');
+                hamburger.querySelector('i').classList.replace('fa-times', 'fa-bars');
+            }
+        });
+    }
+});
