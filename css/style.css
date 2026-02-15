@@ -797,145 +797,49 @@ input:checked+.slider:before {
 
 #search-input {
     width: 100%;
-    padding: 1rem 1rem 1rem 3rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 50px;
-    font-size: 1rem;
-    box-shadow: var(--box-shadow);
-    transition: all 0.3s ease;
-}
 
-#search-input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
+    @media (max-width: 768px) {
+        .nav-links {
+            display: none;
+            /* Simplify for now, or add hamburger later */
+        }
 
-/* Product Modal - Detailed & Beautiful */
-.product-modal-content {
-    max-width: 800px;
-    padding: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
+        .hero-content h1 {
+            font-size: 2rem;
+        }
 
-.modal-body {
-    display: flex;
-    flex-direction: column;
-}
+        /* Cashier Mobile */
+        .cashier-layout {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
 
-@media (min-width: 768px) {
-    .modal-body {
-        flex-direction: row;
+        .cashier-products {
+            height: 500px;
+            /* Fixed height for scroll */
+            margin-bottom: 2rem;
+        }
+
+        .cashier-cart {
+            height: auto;
+        }
+
+        /* Admin Sidebar / Tabs */
+        .tabs {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .tab-btn {
+            flex: 1 1 40%;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modals */
+        .modal-content {
+            width: 95%;
+            margin: 1rem;
+            padding: 1.5rem;
+        }
     }
-}
-
-.modal-image {
-    flex: 1;
-    background: #f1f5f9;
-    padding: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-image img {
-    max-width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-    mix-blend-mode: multiply;
-}
-
-.modal-info {
-    flex: 1.2;
-    padding: 2.5rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-tag {
-    display: inline-block;
-    background: #dcfce7;
-    color: #15803d;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 1rem;
-    width: fit-content;
-}
-
-.modal-info h2 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-    line-height: 1.2;
-}
-
-.modal-info .price {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    color: var(--primary-color);
-}
-
-.modal-info p {
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-
-.btn-whatsapp {
-    background: #25D366;
-    color: white;
-    text-decoration: none;
-    text-align: center;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: background 0.2s;
-}
-
-.btn-whatsapp:hover {
-    background: #128c7e;
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    font-size: 2rem;
-    color: #64748b;
-    cursor: pointer;
-    z-index: 10;
-    transition: color 0.2s;
-}
-
-.close-modal:hover {
-    color: var(--danger-color);
-}
-
-/* Scroll Animation */
-.reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s ease-out;
-}
-
-.reveal.active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .hero-content h1 {
-        font-size: 2rem;
-    }
-
-    .cashier-layout {
-        grid-template-columns: 1fr;
-    }
-}
