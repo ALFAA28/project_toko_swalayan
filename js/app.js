@@ -192,4 +192,31 @@ window.addToCart = (productId) => {
 }
 
 // Load products on page load
+// --- MOBILE MENU TOGGLE ---
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.getElementById('nav-links');
+
+if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+
+        // Toggle icon
+        const icon = hamburger.querySelector('i');
+        if (navLinks.classList.contains('active')) {
+            icon.classList.replace('fa-bars', 'fa-times');
+        } else {
+            icon.classList.replace('fa-times', 'fa-bars');
+        }
+    });
+
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            hamburger.querySelector('i').classList.replace('fa-times', 'fa-bars');
+        });
+    });
+}
+
+// Load products on page load
 document.addEventListener('DOMContentLoaded', loadProducts);
