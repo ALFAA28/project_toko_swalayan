@@ -121,18 +121,40 @@ async function loadProducts() {
 }
 
 // Global functions for inline HTML events
-window.deleteProduct = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-        try {
-            await deleteDoc(doc(db, "products", id));
-            showToast('Produk berhasil dihapus.', 'success');
-            loadProducts(); // Refresh list
-        } catch (error) {
-            console.error("Error removing document: ", error);
-            showToast('Gagal menghapus produk.', 'error');
-        }
-    }
+// --- DELETE MODAL LOGIC ---
+let productToDeleteId = null;
+const deleteModal = document.getElementById('delete-modal');
+const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+window.deleteProduct = (id) => {
+    productToDeleteId = id;
+    deleteModal.classList.add('active');
 };
+
+window.closeDeleteModal = () => {
+    deleteModal.classList.remove('active');
+    productToDeleteId = null;
+};
+
+confirmDeleteBtn.addEventListener('click', async () => {
+    if (!productToDeleteId) return;
+
+    confirmDeleteBtn.disabled = true;
+    confirmDeleteBtn.textContent = 'Menghapus...';
+
+    try {
+        await deleteDoc(doc(db, "products", productToDeleteId));
+        showToast('Produk berhasil dihapus.', 'success');
+        loadProducts(); // Refresh list
+        closeDeleteModal();
+    } catch (error) {
+        console.error("Error removing document: ", error);
+        showToast('Gagal menghapus produk.', 'error');
+    } finally {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.textContent = 'Ya, Hapus';
+    }
+});
 
 window.openEditModal = (id, name, price, stock, description, imageUrl) => {
     editingProductId = id;

@@ -252,6 +252,42 @@
         <div id="toast-message">Notification message</div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <i class="fa-solid fa-triangle-exclamation"
+                style="font-size: 4rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+            <h2>Hapus Produk?</h2>
+            <p>Tindakan ini tidak dapat dibatalkan.</p>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <button class="btn-primary" style="background: #ccc; color: #333;"
+                    onclick="closeDeleteModal()">Batal</button>
+                <button id="confirm-delete-btn" class="btn-primary" style="background: var(--danger-color);">Ya,
+                    Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Confirmation Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <i class="fa-solid fa-circle-question"
+                style="font-size: 4rem; color: var(--accent-color); margin-bottom: 1rem;"></i>
+            <h2>Konfirmasi Transaksi</h2>
+            <p>Total belanja: <span id="confirm-total" style="font-weight: bold; font-size: 1.2rem;">Rp 0</span></p>
+            <p>Uang Pembayaran: <span id="confirm-pay" style="font-weight: bold; font-size: 1.2rem;">Rp 0</span></p>
+            <p>Kembalian: <span id="confirm-change"
+                    style="font-weight: bold; font-size: 1.2rem; color: var(--success-color);">Rp 0</span></p>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <button class="btn-primary" style="background: #ccc; color: #333;"
+                    onclick="closeCheckoutModal()">Batal</button>
+                <button id="confirm-checkout-btn" class="btn-primary">Proses & Cetak</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/admin.js"></script>
 </body>
 
