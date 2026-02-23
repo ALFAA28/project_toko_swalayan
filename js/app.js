@@ -49,31 +49,66 @@ async function loadProducts() {
 
         querySnapshot.forEach(doc => {
             const product = doc.data();
-            product.id = doc.id; // Save ID
-            // Store discount info in object for easy access
+            product.id = doc.id;
             product.discountActive = discountActive;
             product.discountPercent = discountPercent;
             product.finalPrice = discountActive ? (product.price - Math.floor(product.price * (discountPercent / 100))) : product.price;
 
             allProductsCache.push(product);
-
-            createProductCard(product);
         });
+
+        renderProducts(allProductsCache);
 
         // Show banner if discount active
         if (discountActive) {
             const pageTitle = document.getElementById('page-title');
             pageTitle.innerHTML = `Produk Terbaru <span style="background: var(--danger-color); color: white; padding: 0.2rem 1rem; border-radius: 20px; font-size: 1rem; vertical-align: middle; margin-left: 1rem;">🔥 ${discountName} IS LIVE!</span>`;
         }
-
     } catch (error) {
         console.error("Error fetching products: ", error);
+        const productContainer = document.getElementById('product-container');
         productContainer.innerHTML = '<p class="text-center" style="color: red;">Gagal memuat produk. Cek koneksi internet.</p>';
     }
 }
 
+function renderProducts(products) {
+    productContainer.innerHTML = '';
+
+    if (products.length === 0) {
+        productContainer.innerHTML = '<p class="text-center">Produk tidak ditemukan.</p>';
+        return;
+    }
+
+    // Group by category
+    const grouped = {};
+    products.forEach(p => {
+        const cat = p.category || 'Lainnya';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(p);
+    });
+
+    // Render groups
+    for (const category in grouped) {
+        const section = document.createElement('div');
+        section.className = 'category-section';
+        section.innerHTML = `
+            <h2 class="category-title" style="margin: 2rem 0 1rem; color: var(--primary-color); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">
+                ${category}
+            </h2>
+            <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2rem;">
+                <!-- Cards for this category -->
+            </div>
+        `;
+        const grid = section.querySelector('.product-grid');
+        grouped[category].forEach(p => {
+            const card = createProductCard(p);
+            grid.appendChild(card);
+        });
+        productContainer.appendChild(section);
+    }
+}
+
 function createProductCard(product) {
-    const productContainer = document.getElementById('product-container');
     const imageUrl = product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image';
 
     // Calculate Price HTML
@@ -87,18 +122,14 @@ function createProductCard(product) {
     }
 
     const card = document.createElement('div');
-    card.className = 'product-card reveal'; // Add reveal class for animation
+    card.className = 'product-card reveal';
 
-    // Add click event to open modal
-    card.onclick = (e) => {
-        // Prevent modal if clicking specifically on something else if needed, but card click is fine
-        openProductModal(product);
-    };
+    card.onclick = () => openProductModal(product);
 
     card.innerHTML = `
         <img src="${imageUrl}" alt="${product.name}">
         <div class="card-content">
-            <div class="product-category">Groceries</div>
+            <div class="product-category">${product.category || 'Umum'}</div>
             <div class="product-title">${product.name}</div>
             <div class="product-desc">${product.description || 'Deskripsi produk tidak tersedia.'}</div>
             <div class="card-footer">
@@ -107,10 +138,8 @@ function createProductCard(product) {
             </div>
         </div>
     `;
-    productContainer.appendChild(card);
 
-    // Trigger animation check
-    checkScroll();
+    return card;
 }
 
 // --- SEARCH FEATURE ---
@@ -121,13 +150,12 @@ if (searchInput) {
         const productContainer = document.getElementById('product-container');
         productContainer.innerHTML = '';
 
-        const filtered = allProductsCache.filter(p => p.name.toLowerCase().includes(term));
+        const filtered = allProductsCache.filter(p =>
+            p.name.toLowerCase().includes(term) ||
+            (p.category && p.category.toLowerCase().includes(term))
+        );
 
-        if (filtered.length === 0) {
-            productContainer.innerHTML = '<p class="text-center">Produk tidak ditemukan.</p>';
-        } else {
-            filtered.forEach(p => createProductCard(p));
-        }
+        renderProducts(filtered);
         checkScroll(); // Re-trigger animation for new elements
     });
 }

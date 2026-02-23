@@ -72,6 +72,7 @@
                             <tr>
                                 <th>Gambar</th>
                                 <th>Nama Produk</th>
+                                <th>Kategori</th>
                                 <th>Harga</th>
                                 <th>Stok</th>
                                 <th>Aksi</th>
@@ -203,6 +204,24 @@
                         <button type="submit" class="btn-primary" style="width: 100%;">Simpan Pengaturan</button>
                     </form>
                 </div>
+
+                <div class="card" style="max-width: 600px; margin: 2rem auto;">
+                    <h3>Kelola Kategori Produk</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Tambahkan atau hapus kategori untuk
+                        mengelompokkan produk Anda.</p>
+
+                    <form id="category-form" style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                        <input type="text" id="new-category-name" placeholder="Nama Kategori Baru..." required
+                            style="flex: 1;">
+                        <button type="submit" class="btn-primary">Tambah</button>
+                    </form>
+
+                    <div id="category-list-container">
+                        <ul id="category-list" style="list-style: none;">
+                            <!-- Categories will be listed here -->
+                        </ul>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -228,6 +247,14 @@
                 <div class="form-group">
                     <label for="product-stock">Stok</label>
                     <input type="number" id="product-stock" required min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="product-category">Kategori</label>
+                    <select id="product-category" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        <!-- Options will be populated from Firestore -->
+                    </select>
                 </div>
 
                 <div class="form-group">

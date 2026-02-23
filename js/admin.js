@@ -100,10 +100,11 @@ async function loadProducts() {
             row.innerHTML = `
                 <td><img src="${product.imageUrl || 'https://via.placeholder.com/50'}" alt="Product"></td>
                 <td>${product.name}</td>
+                <td><span class="category-badge">${product.category || 'Tanpa Kategori'}</span></td>
                 <td>Rp ${product.price}</td>
                 <td>${product.stock}</td>
                 <td class="actions">
-                    <button class="btn-icon btn-edit" onclick="openEditModal('${id}', '${product.name}', ${product.price}, ${product.stock}, '${product.description}', '${product.imageUrl}')">
+                    <button class="btn-icon btn-edit" onclick="openEditModal('${id}', '${product.name}', ${product.price}, ${product.stock}, '${product.description}', '${product.imageUrl}', '${product.category || ''}')">
                         <i class="fa-solid fa-pen"></i>
                     </button>
                     <button class="btn-icon btn-delete" onclick="deleteProduct('${id}')">
@@ -156,12 +157,13 @@ confirmDeleteBtn.addEventListener('click', async () => {
     }
 });
 
-window.openEditModal = (id, name, price, stock, description, imageUrl) => {
+window.openEditModal = (id, name, price, stock, description, imageUrl, category) => {
     editingProductId = id;
     modalTitle.textContent = 'Edit Produk';
     document.getElementById('product-name').value = name;
     document.getElementById('product-price').value = price;
     document.getElementById('product-stock').value = stock;
+    document.getElementById('product-category').value = category || '';
     document.getElementById('product-description').value = description || '';
 
     // Store current URL in a safe place
@@ -232,6 +234,7 @@ productForm.addEventListener('submit', async (e) => {
             name,
             price,
             stock,
+            category: document.getElementById('product-category').value,
             description,
             imageUrl: imageUrl || 'https://via.placeholder.com/300x200?text=No+Image',
             updatedAt: new Date()
@@ -307,10 +310,84 @@ async function loadSettings() {
             // Toggle inputs visibility based on checkbox
             toggleDiscountInputs();
         }
+
+        loadCategories(); // Also load categories when in settings
     } catch (e) {
         console.error("Error loading settings:", e);
     }
 }
+
+// --- CATEGORY MANAGEMENT LOGIC ---
+const categoryList = document.getElementById('category-list');
+const categoryForm = document.getElementById('category-form');
+const productCategorySelect = document.getElementById('product-category');
+
+async function loadCategories() {
+    try {
+        const q = query(collection(db, "categories"), orderBy("name"));
+        const snapshot = await getDocs(q);
+
+        categoryList.innerHTML = '';
+        // Clear except first option
+        productCategorySelect.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+
+        snapshot.forEach(docSnap => {
+            const cat = docSnap.data();
+            const id = docSnap.id;
+
+            // List in Settings
+            const li = document.createElement('li');
+            li.style.display = 'flex';
+            li.style.justifyContent = 'space-between';
+            li.style.padding = '0.5rem 0';
+            li.style.borderBottom = '1px solid #eee';
+            li.innerHTML = `
+                <span>${cat.name}</span>
+                <button onclick="deleteCategory('${id}')" style="background:none; border:none; color:var(--danger-color); cursor:pointer;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            categoryList.appendChild(li);
+
+            // Dropdown in Product Modal
+            const option = document.createElement('option');
+            option.value = cat.name;
+            option.textContent = cat.name;
+            productCategorySelect.appendChild(option);
+        });
+    } catch (e) {
+        console.error("Error loading categories:", e);
+    }
+}
+
+categoryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('new-category-name');
+    const name = input.value.trim();
+    if (!name) return;
+
+    try {
+        await addDoc(collection(db, "categories"), { name: name });
+        input.value = '';
+        showToast('Kategori berhasil ditambah.', 'success');
+        loadCategories();
+    } catch (e) {
+        console.error(e);
+        showToast('Gagal menambah kategori.', 'error');
+    }
+});
+
+window.deleteCategory = async (id) => {
+    if (!confirm('Hapus kategori ini? Produk dengan kategori ini tidak akan terhapus, namun kategorinya akan hilang.')) return;
+    try {
+        await deleteDoc(doc(db, "categories", id));
+        showToast('Kategori dihapus.', 'success');
+        loadCategories();
+    } catch (e) {
+        console.error(e);
+        showToast('Gagal menghapus kategori.', 'error');
+    }
+};
 
 discountActiveCheckbox.addEventListener('change', toggleDiscountInputs);
 
@@ -423,7 +500,10 @@ document.getElementById('cashier-search').addEventListener('input', (e) => {
     const container = document.getElementById('cashier-product-list');
     container.innerHTML = '';
 
-    const filtered = allProductsCache.filter(p => p.name.toLowerCase().includes(term));
+    const filtered = allProductsCache.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        (p.category && p.category.toLowerCase().includes(term))
+    );
 
     filtered.forEach(p => {
         const div = document.createElement('div');
