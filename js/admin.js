@@ -43,6 +43,7 @@ onAuthStateChanged(auth, (user) => {
         dashboardSection.style.display = 'block';
         document.getElementById('nav-actions').style.display = 'flex';
         loadProducts(); // Load products when logged in
+        loadCategories(); // Load categories when logged in
     } else {
         currentUser = null;
         loginSection.style.display = 'block';
